@@ -12,37 +12,50 @@
 
         .editor-layout {
             width: 80%;
-            height: calc(100vh - 30px);
+            height: calc(100vh - 43px);
             flex-grow: 10;
+            box-shadow: 0px 0px 6px grey;
         }
 
         #maincontent {
             display: flex;
             flex-direction: row;
-            height: calc(100vh - 30px);
-            margin-top: 30px;
+            height: calc(100vh - 43px);
+            /* margin-top: 40px; */
             box-sizing: border-box;
         }
 
         #pages {
             flex-grow: 1;
-            border-left: 1px solid grey;
+            margin-right: 10px;
+        }
+
+        #leftspacer {
+            width: 10px;
         }
 
         body,
         html {
             margin: 0;
-            height: calc(100vh - 30px);
+            height: calc(100vh - 40px);
         }
 
         #toolbarcontainer {
             display: flex;
-            border-bottom: 1px solid grey;
             box-sizing: border-box;
             position: absolute;
             top: 0px;
             height: 30px;
             width: 100vw;
+            margin-top: 3px;
+            border: none;
+        }
+
+        #spacer {
+            margin-top: 33px;
+            height: 10px;
+            box-sizing: border-box;
+            border: none;
         }
 
         .save-button {
@@ -51,20 +64,19 @@
 
         .tab {
             /* Green */
+            all: revert;
             font-family: Helvetica, Arial, sans-serif;
             box-sizing: border-box;
             border: none;
             color: black;
-            padding: 5px 5px;
+            padding: 5px 10px;
             text-align: center;
-            margin-top: auto;
-            margin-bottom: auto;
-            border-left: 1px solid grey;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
         }
 
         #pagecontainer {
             all: revert;
-            border-left: 1px solid grey;
         }
 
         .page,
@@ -72,12 +84,21 @@
             font-family: Helvetica, Arial, sans-serif;
             box-sizing: border-box;
             font-size: small;
-            padding-left: 5px;
-            padding-top: 3px;
-            padding-bottom: 3px;
-            padding-right: 3px;
-            margin-left: 5px;
-            border-bottom: 1px solid grey;
+            padding-left: 10px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            padding-right: 10px;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
+        .new-page-button {
+            margin-top: 5px;
+            color: grey;
+        }
+
+        .new-page-button:active {
+            color: black;
         }
 
         .notebook-name-class {
@@ -88,12 +109,7 @@
             padding-right: 15px;
             margin-top: auto;
             margin-bottom: auto;
-        }
-
-        .tab:active,
-        .page:active,
-        .new-page-button:active {
-            background-color: lightgrey;
+            border-right: 1px solid lightgray;
         }
 
         #tabcontainer {
@@ -106,31 +122,36 @@
         .save-button,
         .load-button {
             font-family: Helvetica, Arial, sans-serif;
+            font-size: small;
             box-sizing: border-box;
-            border: 1px solid grey;
             text-align: center;
+            color: grey;
             padding: 5px 5px;
             margin-top: auto;
             margin-bottom: auto;
-            border-radius: 7px;
-            border-radius: 7px;
+        }
+
+        .load-button {
+            margin-right: 10px;
         }
 
         .new-button {
             font-family: Helvetica, Arial, sans-serif;
+            font-size: small;
             box-sizing: border-box;
-            border: 1px solid grey;
-            font-weight: bold;
-            padding: 5px 10px;
+            text-align: center;
+            color: grey;
+            padding: 5px 5px;
+            margin-left: 10px;
             margin-top: auto;
             margin-bottom: auto;
-            border-radius: 7px;
+            border-top-left-radius: 5px;
         }
 
         .save-button:active,
         .load-button:active,
         .new-button:active {
-            background-color: lightgrey;
+            color: black;
         }
 
         #inp {
@@ -165,6 +186,11 @@
         .context-menu ul li:hover {
             background: lightgray;
         }
+
+        .ql-toolbar.ql-snow {
+            border: none !important;
+            border-bottom: 1px lightgrey !important;
+        }
     </style>
     <title>CloneNote</title>
 </head>
@@ -180,13 +206,16 @@
         </div>
         <div id="tabcontainer">
         </div>
-        <div class="new-button" onclick="newTab()">+</div>
+        <div class="new-button" onclick="newTab()">Add Tab</div>
         <div class="save-button" onclick="save()">Save</div>
         <div class="load-button" onclick="load()">Load</div>
     </div>
 
+    <div id="spacer"></div>
+
     <!-- Create the editor container -->
     <div id="maincontent">
+        <div id="leftspacer"></div>
         <div class="editor-layout">
             <div id="editor"></div>
         </div>
@@ -234,6 +263,8 @@
             }]
         };
 
+        const tabColors = [ "#BF633080", "#E3A92480", "#DED8B680", "#86C1A580", "#62518580"]
+
         // fancy toolbar
         var toolbarOptions = [
             ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
@@ -260,13 +291,18 @@
             theme: 'snow'
         });
 
-        // load default tab into editor
-        function setup() {
+        // loads notebook into html elements
+        function loadNotebook() {
             // set editor content
-            var tab = notebook.tabs[notebook.activeTab];
-            var content = tab.pages[tab.activePage].content;
+            var currentTab = notebook.tabs[notebook.activeTab];
+            var content = currentTab.pages[currentTab.activePage].content;
             quill.setContents(content);
+
+            // clear tabs
             var tabcontainer = document.getElementById('tabcontainer');
+            while (tabcontainer.firstChild) {
+                tabcontainer.removeChild(tabcontainer.firstChild);
+            }          
 
             // set notebook name
             document.getElementById('notebookname').innerText = notebook.notebookName;
@@ -274,7 +310,7 @@
             document.getElementById('notebookname').addEventListener('input', setNotebookName);
 
             // Load tabs into tabcontainer
-            for (tab of notebook.tabs) {
+            for (var tab of notebook.tabs) {
                 const tabLabel = document.createElement('div');
                 tabLabel.setAttribute('onClick', 'openTab(this)');
                 tabLabel.setAttribute('onDblClick', 'renameTab(this)');
@@ -288,12 +324,20 @@
             }
 
             // Make active tab bold
-            tabcontainer.children[notebook.activeTab].style.fontWeight = 'bold';
-            tabcontainer.children[notebook.activeTab].style.borderBottom = "2px solid grey";
+            //tabcontainer.children[notebook.activeTab].style.fontWeight = 'bold';
+            // Give active tab some box shadow to the left and right
+            tabcontainer.children[notebook.activeTab].style.boxShadow = '0px 0px 6px lightgrey';
+            tabcontainer.children[notebook.activeTab].style.clipPath = 'inset(-6px -6px 0 -6px)';
+
+
+            // Clear pages
+            var pagesDiv = document.getElementById('pages');
+            while (pagesDiv.firstChild) {
+                pagesDiv.removeChild(pagesDiv.firstChild);
+            }  
 
             // Load page divs into #pages container div
-            var pagesDiv = document.getElementById('pages');
-            for (page of tab.pages) {
+            for (var page of currentTab.pages) {
                 const newPage = document.createElement('div');
                 newPage.setAttribute('class', 'page');
                 newPage.setAttribute('onClick', 'openPage(this)');
@@ -306,8 +350,24 @@
             }
 
             // make active page bold
-            pagesDiv.children[tab.activePage].style.fontWeight = 'bold';
-            pagesDiv.children[tab.activePage].style.borderBottom = "2px solid grey";
+            pagesDiv.children[currentTab.activePage].style.backgroundColor = 'white';
+            pagesDiv.children[currentTab.activePage].style.boxShadow = '0px 0px 6px grey';
+            pagesDiv.children[currentTab.activePage].style.clipPath = 'inset(-6px -6px -6px 0px)';
+
+            // set colors
+            var color = tabColors[notebook.activeTab % tabColors.length];
+            var spacer = document.getElementById('spacer');
+            tabcontainer.children[notebook.activeTab].style.backgroundColor = color;
+            spacer.style.backgroundColor = color;
+            var leftspacer = document.getElementById('leftspacer');
+            var pagecontainer = document.getElementById('pagecontainer');
+            pagecontainer.style.backgroundColor = color;
+            leftspacer.style.backgroundColor = color;
+        }
+
+        // load default tab into editor
+        function setup() {
+            loadNotebook();
         }
 
         // context menu functions
@@ -382,56 +442,7 @@
                     console.log('new pages', JSON.stringify(notebook.tabs[notebook.activeTab].pages))
                 }
             }
-            while (tabcontainer.firstChild) {
-                tabcontainer.removeChild(tabcontainer.firstChild);
-            }
-            // create the right tabs and divs, load first tab
-            for (const tabData of notebook.tabs) {
-                const tab = document.createElement('div');
-                tab.setAttribute('onClick', 'openTab(this)');
-                tab.setAttribute('class', 'tab');
-                tab.addEventListener('input', setTabName);
-                tab.addEventListener('contextmenu', showMenu);
-                tab.setAttribute('onDblClick', 'renameTab(this)');
-                const title = document.createTextNode(tabData.name);
-                tab.appendChild(title);
-                tabcontainer.appendChild(tab);
-            }
-            // reload tabs and pages
-            // set editor contents to active page of new active tab
-            var newTab = notebook.tabs[notebook.activeTab];
-            quill.setContents(newTab.pages[newTab.activePage].content);
-
-            // Make active tab bold and other tabs normal text weight
-            for (const tab of tabcontainer.children) {
-                tab.style.fontWeight = 'normal';
-                tab.style.borderBottom = "none";
-            }
-            // Make active tab bold
-            tabcontainer.children[notebook.activeTab].style.fontWeight = 'bold';
-            tabcontainer.children[notebook.activeTab].style.borderBottom = "2px solid grey";
-
-            // Load page divs into #pages container div
-            var pagesDiv = document.getElementById('pages');
-            while (pagesDiv.firstChild) {
-                pagesDiv.removeChild(pagesDiv.firstChild);
-            }
-
-            for (page of newTab.pages) {
-                const newPage = document.createElement('div');
-                newPage.setAttribute('class', 'page');
-                newPage.setAttribute('onClick', 'openPage(this)');
-                newPage.setAttribute('onDblClick', 'renamePage(this)');
-                newPage.addEventListener('input', setPageName);
-                newPage.addEventListener('contextmenu', showMenu);
-                const pageName = document.createTextNode(page.name);
-                newPage.appendChild(pageName);
-                pagesDiv.appendChild(newPage);
-            }
-
-            // make active page bold
-            pagesDiv.children[newTab.activePage].style.fontWeight = 'bold';
-            pagesDiv.children[newTab.activePage].style.borderBottom = "2px solid grey";
+            loadNotebook();
         }
 
         function setNotebookName(e) {
@@ -459,39 +470,7 @@
                 const tabcontainer = document.getElementById('tabcontainer');
                 notebook.activeTab = Array.prototype.indexOf.call(tabcontainer.children, elem);
 
-                // set editor contents to active page of new active tab
-                var newTab = notebook.tabs[notebook.activeTab];
-                quill.setContents(newTab.pages[newTab.activePage].content);
-
-                // Make active tab bold and other tabs normal text weight
-                for (const tab of tabcontainer.children) {
-                    tab.style.fontWeight = 'normal';
-                    tab.style.borderBottom = "none";
-                }
-                elem.style.fontWeight = 'bold';
-                elem.style.borderBottom = "4px solid grey";
-
-                // Load page divs into #pages container div
-                var pagesDiv = document.getElementById('pages');
-                while (pagesDiv.firstChild) {
-                    pagesDiv.removeChild(pagesDiv.firstChild);
-                }
-
-                for (page of newTab.pages) {
-                    const newPage = document.createElement('div');
-                    newPage.setAttribute('class', 'page');
-                    newPage.setAttribute('onClick', 'openPage(this)');
-                    newPage.setAttribute('onDblClick', 'renamePage(this)');
-                    newPage.addEventListener('input', setPageName);
-                    newPage.addEventListener('contextmenu', showMenu);
-                    const pageName = document.createTextNode(page.name);
-                    newPage.appendChild(pageName);
-                    pagesDiv.appendChild(newPage);
-                }
-
-                // make active page bold
-                pagesDiv.children[newTab.activePage].style.fontWeight = 'bold';
-                pagesDiv.children[newTab.activePage].style.borderBottom = "2px solid grey";
+                loadNotebook();
             }
         }
 
@@ -542,31 +521,7 @@
                 const pageContainer = document.getElementById('pages');
                 tab.activePage = Array.prototype.indexOf.call(pageContainer.children, elem);
 
-                // set editor contents to active page
-                var newTab = notebook.tabs[notebook.activeTab];
-                quill.setContents(newTab.pages[newTab.activePage].content);
-
-                // Load page divs into #pages container div
-                var pagesDiv = document.getElementById('pages');
-                while (pagesDiv.firstChild) {
-                    pagesDiv.removeChild(pagesDiv.firstChild);
-                }
-
-                for (page of newTab.pages) {
-                    const newPage = document.createElement('div');
-                    newPage.setAttribute('class', 'page');
-                    newPage.setAttribute('onClick', 'openPage(this)');
-                    newPage.setAttribute('onDblClick', 'renamePage(this)');
-                    newPage.addEventListener('input', setPageName);
-                    newPage.addEventListener('contextmenu', showMenu);
-                    const pageName = document.createTextNode(page.name);
-                    newPage.appendChild(pageName);
-                    pagesDiv.appendChild(newPage);
-                }
-
-                // make active page bold
-                pagesDiv.children[newTab.activePage].style.fontWeight = 'bold';
-                pagesDiv.children[newTab.activePage].style.borderBottom = "2px solid grey";
+                loadNotebook();
             }
         }
 
@@ -577,30 +532,7 @@
                     { insert: '\n' },
                 ]
             });
-
-            // Load page divs into #pages container div
-            var pagesDiv = document.getElementById('pages');
-            while (pagesDiv.firstChild) {
-                pagesDiv.removeChild(pagesDiv.firstChild);
-            }
-
-            var tab = notebook.tabs[notebook.activeTab];
-
-            for (page of tab.pages) {
-                const newPage = document.createElement('div');
-                newPage.setAttribute('class', 'page');
-                newPage.setAttribute('onClick', 'openPage(this)');
-                newPage.setAttribute('onDblClick', 'renamePage(this)');
-                newPage.addEventListener('input', setPageName);
-                newPage.addEventListener('contextmenu', showMenu);
-                const pageName = document.createTextNode(page.name);
-                newPage.appendChild(pageName);
-                pagesDiv.appendChild(newPage);
-            }
-
-            // make active page bold
-            pagesDiv.children[tab.activePage].style.fontWeight = 'bold';
-            pagesDiv.children[tab.activePage].style.borderBottom = "2px solid grey";
+            loadNotebook();
         }
 
         // save to json
@@ -624,33 +556,7 @@
             var reader = new FileReader();
             reader.onload = function (e) {
                 notebook = JSON.parse(e.target.result);
-                // remove existing tabs
-                const tabs = document.getElementById('tabcontainer');
-                while (tabs.firstChild) {
-                    tabs.removeChild(tabs.firstChild);
-                }
-                // create the right tabs and divs, load first tab
-                for (const tabData of notebook.tabs) {
-                    const tab = document.createElement('div');
-                    tab.setAttribute('onClick', 'openTab(this)');
-                    tab.addEventListener('contextmenu', showMenu);
-                    tab.addEventListener('input', setTabName);
-                    tab.setAttribute('class', 'tab');
-                    tab.setAttribute('onDblClick', 'renameTab(this)');
-                    const title = document.createTextNode(tabData.name);
-                    tab.appendChild(title);
-                    tabs.appendChild(tab);
-                }
-
-                // set editor contents to active page of new active tab
-                var newTab = notebook.tabs[notebook.activeTab];
-                quill.setContents(newTab.pages[newTab.activePage].content);
-
-                // reload pages on the side
-                tabcontainer.children[notebook.activeTab].click();
-
-                // set notebook name
-                document.getElementById('notebookname').innerText = notebook.notebookName;
+                loadNotebook();
             }
             reader.readAsText(file);
         }
