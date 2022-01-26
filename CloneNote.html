@@ -28,7 +28,9 @@
 
         #pages {
             flex-grow: 1;
-            margin-right: 10px;
+            margin-right: 0px;
+            padding-right: 0px;
+            margin-left: 10px;
         }
 
         #leftspacer {
@@ -71,8 +73,9 @@
             /* Green */
             font-family: Helvetica, Arial, sans-serif;
             box-sizing: border-box;
-            border: none;
-            color: black;
+            border-right: 1px solid lightgrey;
+            font-size: small;
+            color: grey;
             padding: 5px 10px;
             text-align: center;
             border-top-left-radius: 5px;
@@ -93,21 +96,19 @@
             padding-top: 5px;
             padding-bottom: 5px;
             padding-right: 10px;
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
+
+            border-bottom: 1px solid lightgrey;
             position: relative;
             cursor: pointer;
+            color: grey;
         }
 
         .new-page-button {
             margin-top: 5px;
             font-size: smaller;
-            color: grey;
             cursor: pointer;
-        }
-
-        .new-page-button:active {
-            color: black;
+            text-align: center;
+            border: none;
         }
 
         .notebook-name-class {
@@ -162,8 +163,23 @@
 
         .save-button:active,
         .load-button:active,
-        .new-button:active {
+        .new-button:active,
+        .new-page-button:active {
             color: black;
+        }
+
+        .save-button:hover,
+        .load-button:hover,
+        .new-button:hover,
+        .new-page-button:hover {
+            text-decoration: underline;
+        }
+
+        .tab:focus,
+        .page:focus,
+        .notebook-name-class:focus {
+            outline: none;
+            text-decoration: underline;
         }
 
         #inp {
@@ -339,9 +355,18 @@
             // Make active tab bold
             //tabcontainer.children[notebook.activeTab].style.fontWeight = 'bold';
             // Give active tab some box shadow to the left and right
-            tabcontainer.children[notebook.activeTab].style.boxShadow = '0px 0px 10px lightgrey';
-            tabcontainer.children[notebook.activeTab].style.clipPath = 'inset(-10px -10px 0 -10px)';
-            tabcontainer.children[notebook.activeTab].style.zIndex = "1";
+            //tabcontainer.children[notebook.activeTab].style.boxShadow = '0px 0px 10px lightgrey';
+            //tabcontainer.children[notebook.activeTab].style.clipPath = 'inset(-10px -10px 0 -10px)';
+            tabcontainer.children[notebook.activeTab].style.zIndex = "2";
+            tabcontainer.children[notebook.activeTab].style.position = 'relative';
+            tabcontainer.children[notebook.activeTab].style.top = '2px';
+            tabcontainer.children[notebook.activeTab].style.color = 'black';
+            tabcontainer.children[notebook.activeTab].style.paddingLeft = '12px';
+            tabcontainer.children[notebook.activeTab].style.paddingRight = '12px';
+            tabcontainer.children[notebook.activeTab].style.fontSize = 'medium';
+            tabcontainer.children[notebook.activeTab].style.color = 'black';
+            tabcontainer.children[notebook.activeTab].style.borderRight = 'none';
+            tabcontainer.children[notebook.activeTab].style.borderTopLeftRadius = '0';
 
             // Clear pages
             var pagesDiv = document.getElementById('pages');
@@ -362,9 +387,12 @@
             }
 
             // make active page bold
-            pagesDiv.children[currentTab.activePage].style.backgroundColor = 'white';
-            pagesDiv.children[currentTab.activePage].style.boxShadow = '0px 0px 6px grey';
-            pagesDiv.children[currentTab.activePage].style.clipPath = 'inset(-6px -6px -6px 0px)';
+            pagesDiv.children[currentTab.activePage].style.backgroundColor = 'floralwhite';
+            pagesDiv.children[currentTab.activePage].style.zIndex = "1";
+            pagesDiv.children[currentTab.activePage].style.paddingTop = "7px";
+            pagesDiv.children[currentTab.activePage].style.paddingBottom = "7px";
+            pagesDiv.children[currentTab.activePage].style.paddingLeft = "7px";
+            pagesDiv.children[currentTab.activePage].style.color = 'black';
 
             // set colors
             var color = tabColors[notebook.activeTab % tabColors.length];
