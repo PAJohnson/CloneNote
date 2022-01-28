@@ -18,7 +18,7 @@
             height: calc(100vh - 43px);
             flex-grow: 10;
             box-shadow: 0px 0px 6px grey;
-            z-index: 1;
+            z-index: 3;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -43,6 +43,18 @@
             margin-right: 0px;
             padding-right: 0px;
             margin-left: 10px;
+            height: 100%;
+            overflow-y: scroll;
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* Internet Explorer 10+ */
+        }
+
+        #pages::-webkit-scrollbar {
+            /* WebKit */
+            width: 0;
+            height: 0;
         }
 
         #leftspacer {
@@ -81,6 +93,15 @@
             cursor: pointer;
         }
 
+        #tabcontainer {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+            margin-left: 3px;
+            overflow: hidden;
+        }
+
         .tab {
             /* Green */
             font-family: Helvetica, Arial, sans-serif;
@@ -93,6 +114,7 @@
             border-top-left-radius: 5px;
             border-top-right-radius: 5px;
             cursor: pointer;
+            white-space: nowrap;
         }
 
         #pagecontainer {
@@ -108,19 +130,32 @@
             padding-top: 5px;
             padding-bottom: 5px;
             padding-right: 10px;
-
             border-bottom: 1px solid lightgrey;
             position: relative;
             cursor: pointer;
             color: grey;
+            user-select: none;
         }
 
         .new-page-button {
-            margin-top: 5px;
+            padding-bottom: 5px;
             font-size: smaller;
             cursor: pointer;
             text-align: center;
             border: none;
+            user-select: none;
+        }
+
+        .new-page-button::after {
+            content: '';
+            position: absolute;
+            margin: auto;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: 75%;
+            height: 1px;
+            background-color: rgb(163, 163, 163);
         }
 
         .notebook-name-class {
@@ -132,14 +167,7 @@
             margin-top: auto;
             margin-bottom: auto;
             border-right: 1px solid lightgray;
-        }
-
-        #tabcontainer {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: row;
-            margin-left: 3px;
+            white-space: nowrap;
         }
 
         .save-button,
@@ -153,6 +181,7 @@
             margin-top: auto;
             margin-bottom: auto;
             cursor: pointer;
+            user-select: none;
         }
 
         .load-button {
@@ -205,9 +234,8 @@
             position: absolute;
             text-align: center;
             background: white;
-            border: 1px solid grey;
             z-index: 10;
-            box-shadow: 5px 5px 5px lightgrey;
+            box-shadow: 0px 0px 3px lightgrey;
         }
 
         .context-menu ul {
@@ -233,6 +261,11 @@
             border: none !important;
             border-bottom: 1px lightgrey !important;
         }
+
+        .ql-syntax {
+            background-color: rgb(241, 241, 241) !important;
+            color: black !important;
+        }
     </style>
     <title>CloneNote</title>
 </head>
@@ -244,7 +277,7 @@
     <!-- + button creates new tab with open name field -->
     <!-- save/load aligned to the right -->
     <div id="toolbarcontainer">
-        <div id="notebookname" class="notebook-name-class">
+        <div id="notebookname" class="notebook-name-class" spellcheck="false">
         </div>
         <div id="tabcontainer">
         </div>
@@ -262,9 +295,9 @@
             <div id="editor"></div>
         </div>
         <div id="pagecontainer">
+            <div class='new-page-button' onclick="newPage()">page++</div>
             <div id="pages">
             </div>
-            <div class='new-page-button' onclick="newPage()">page++</div>
         </div>
     </div>
 
@@ -279,6 +312,9 @@
         </ul>
     </div>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/highlight.min.js"></script>
+
     <!-- Include the Quill library -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <!-- FileSaver.js-->
@@ -287,6 +323,10 @@
     <!-- Initialize Quill editor -->
     <script>
         var Delta = Quill.import('delta');
+
+        hljs.configure({   // optionally configure hljs
+            languages: ['javascript', 'ruby', 'python']
+        });
 
         // State contained in notebook array and notebook.activeTab variable
         var notebook = {
@@ -328,7 +368,8 @@
 
         var quill = new Quill('#editor', {
             modules: {
-                toolbar: toolbarOptions
+                toolbar: toolbarOptions,
+                syntax: true,
             },
             theme: 'snow'
         });
@@ -357,9 +398,13 @@
 
             // Load tabs into tabcontainer
             for (var tab of notebook.tabs) {
+                const tabIndex = Array.prototype.indexOf.call(notebook.tabs, tab);
+                const color = tabColors[tabIndex % tabColors.length];
                 const tabLabel = document.createElement('div');
+                tabLabel.style.backgroundColor = color;
                 tabLabel.setAttribute('class', 'tab');
                 tabLabel.setAttribute('onClick', 'openTab(this)');
+                tabLabel.setAttribute('spellcheck', 'false');
                 tabLabel.addEventListener('input', setTabName);
                 tabLabel.addEventListener('contextmenu', showMenu);
                 const title = document.createTextNode(tab.name);
@@ -370,9 +415,6 @@
             // Make active tab bold
             //tabcontainer.children[notebook.activeTab].style.fontWeight = 'bold';
             // Give active tab some box shadow to the left and right
-            //tabcontainer.children[notebook.activeTab].style.boxShadow = '0px 0px 10px lightgrey';
-            //tabcontainer.children[notebook.activeTab].style.clipPath = 'inset(-10px -10px 0 -10px)';
-            tabcontainer.children[notebook.activeTab].style.zIndex = "2";
             tabcontainer.children[notebook.activeTab].style.position = 'relative';
             tabcontainer.children[notebook.activeTab].style.top = '2px';
             tabcontainer.children[notebook.activeTab].style.color = 'black';
@@ -394,6 +436,7 @@
                 const newPage = document.createElement('div');
                 newPage.setAttribute('class', 'page');
                 newPage.setAttribute('onClick', 'openPage(this)');
+                newPage.setAttribute('spellcheck', 'false');
                 newPage.addEventListener('input', setPageName);
                 newPage.addEventListener('contextmenu', showMenu);
                 const pageName = document.createTextNode(page.name);
@@ -403,7 +446,6 @@
 
             // make active page bold
             pagesDiv.children[currentTab.activePage].style.backgroundColor = 'floralwhite';
-            pagesDiv.children[currentTab.activePage].style.zIndex = "1";
             pagesDiv.children[currentTab.activePage].style.paddingTop = "7px";
             pagesDiv.children[currentTab.activePage].style.paddingBottom = "7px";
             pagesDiv.children[currentTab.activePage].style.paddingLeft = "7px";
@@ -424,6 +466,69 @@
         function setup() {
             loadNotebook();
         }
+
+        // Make Tabs bar scrollable
+        const tabcontainer = document.getElementById('tabcontainer');
+        const pages = document.getElementById('pages');
+        let mouseDown = false;
+        let isDragged = false;
+        let startX, scrollLeft;
+        let startY, scrollTop;
+
+        function startDraggingTabs(e) {
+            mouseDown = true;
+            startX = e.pageX - tabcontainer.offsetLeft;
+            scrollLeft = tabcontainer.scrollLeft;
+        }
+
+        function stopDraggingTabs(e) {
+            mouseDown = false;
+            setTimeout(() => {
+                isDragged = false;
+            }, 50);
+        }
+
+        tabcontainer.addEventListener('mousemove', (e) => {
+            e.preventDefault();
+            if (!mouseDown) { return };
+            isDragged = true;
+            const x = e.pageX - tabcontainer.offsetLeft;
+            const scroll = x - startX;
+            tabcontainer.scrollLeft = scrollLeft - scroll;
+        });
+
+        tabcontainer.addEventListener('mousedown', startDraggingTabs, false);
+        tabcontainer.addEventListener('mouseup', stopDraggingTabs, false);
+        tabcontainer.addEventListener('mouseleave', stopDraggingTabs, false);
+
+        function startDraggingPages(e) {
+            mouseDown = true;
+            startY = e.pageY - pages.offsetTop;
+            scrollTop = pages.scrollTop;
+            console.log('calling startDrag, startY = ', startY, 'scrollTop ', scrollTop);
+        }
+
+        function stopDraggingPages(e) {
+            mouseDown = false;
+            setTimeout(() => {
+                isDragged = false;
+            }, 50);
+        }
+
+        pages.addEventListener('mousemove', (e) => {
+            e.preventDefault();
+            if (!mouseDown) { return };
+            isDragged = true;
+            const y = e.pageY - pages.offsetTop;
+            const scroll = y - startY;
+            pages.scrollTop = scrollTop - scroll;
+            console.log('y', y, 'scroll', scroll, 'scrollTop', scrollTop, 'pages.scrollTop', pages.scrollTop);
+
+        });
+
+        pages.addEventListener('mousedown', startDraggingPages, false);
+        pages.addEventListener('mouseup', stopDraggingPages, false);
+        pages.addEventListener('mouseleave', stopDraggingPages, false);
 
         // context menu functions
         document.onclick = hideMenu;
@@ -502,8 +607,7 @@
 
         // save the current editor contents in notebook page and load new content
         function openTab(elem) {
-            console.log('from openTab', elem.getAttribute("contenteditable"));
-            if (elem.getAttribute("contenteditable") != 'true') {
+            if (elem.getAttribute("contenteditable") != 'true' && isDragged == false) {
                 // save current page to delta
                 var tab = notebook.tabs[notebook.activeTab];
                 console.log(tab);
@@ -530,8 +634,11 @@
                     ]
                 }]
             });
+            const color = tabColors[(notebook.tabs.length - 1) % tabColors.length];
             const tab = document.createElement('div');
             tab.setAttribute('onClick', 'openTab(this)');
+            tab.style.backgroundColor = color;
+            console.log(tab.style.backgroundColor)
             tab.addEventListener('input', setTabName);
             tab.addEventListener('contextmenu', showMenu);
             tab.setAttribute('class', 'tab');
@@ -549,7 +656,7 @@
 
         function openPage(elem) {
             console.log('from openpage', elem.getAttribute("contenteditable"));
-            if (elem.getAttribute("contenteditable") != 'true') {
+            if (elem.getAttribute("contenteditable") != 'true' && isDragged == false) {
                 // save editor to current activePage
                 var tab = notebook.tabs[notebook.activeTab];
                 tab.pages[tab.activePage].content = quill.getContents();
