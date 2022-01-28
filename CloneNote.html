@@ -8,6 +8,9 @@
         #editor {
             all: revert;
             margin: 0;
+            height: 100%;
+            overflow: hidden;
+            border-top: 1px solid lightgray;
         }
 
         .editor-layout {
@@ -16,6 +19,14 @@
             flex-grow: 10;
             box-shadow: 0px 0px 6px grey;
             z-index: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .ql-editor {
+            overflow-y: scroll;
+            overflow-x: scroll;
         }
 
         #maincontent {
@@ -24,6 +35,7 @@
             height: calc(100vh - 43px);
             /* margin-top: 40px; */
             box-sizing: border-box;
+            overflow: hidden;
         }
 
         #pages {
@@ -321,6 +333,9 @@
             theme: 'snow'
         });
 
+        // for autosave
+        var Delta = Quill.import('delta');
+
         // loads notebook into html elements
         function loadNotebook() {
             console.log('calling loadNotebook')
@@ -559,6 +574,9 @@
 
         // save to json
         function save() {
+            // save changes to current tab on button press
+            var tab = notebook.tabs[notebook.activeTab];
+            tab.pages[tab.activePage].content = quill.getContents();
             console.log('pressed save button');
             var notebookText = JSON.stringify(notebook);
             var blob = new Blob([notebookText], { type: "application/json;charset=utf-8" });
