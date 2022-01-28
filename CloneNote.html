@@ -596,15 +596,14 @@
         }
 
         function setNotebookName(e) {
-            notebook.notebookName = e.path[0].innerText;
+            var path = e.composedPath();
+            notebook.notebookName = path[0].innerText;//e.path[0].innerText;
         }
 
         // Change tab name when input to span element is changed (fires on every character)
         function setTabName(e) {
-            console.log('from setTabName')
-            console.log('old name = ', notebook.tabs[notebook.activeTab].name)
-            notebook.tabs[notebook.activeTab].name = e.path[0].innerText;
-            console.log('new name = ', notebook.tabs[notebook.activeTab].name)
+            var path = e.composedPath();
+            notebook.tabs[notebook.activeTab].name = path[0].innerText;
         }
 
         // save the current editor contents in notebook page and load new content
@@ -652,8 +651,8 @@
 
         // Change tab name when input to span element is changed (fires on every character)
         function setPageName(e) {
-            console.log('in setPageName')
-            notebook.tabs[notebook.activeTab].pages[notebook.tabs[notebook.activeTab].activePage].name = e.path[0].innerText;
+            var path = e.composedPath();
+            notebook.tabs[notebook.activeTab].pages[notebook.tabs[notebook.activeTab].activePage].name = path[0].innerText;
         }
 
         function openPage(elem) {
