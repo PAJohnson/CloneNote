@@ -374,6 +374,8 @@
         //// NOTEBOOK_END
 
         const tabColors = ["#D5D9C3", "#DCC2A7", "#F4E4CA", "#B5C7B2", "#9A9CA8", "#D3B3AC"]
+        const activeTabColor = "#F4E4CA";
+        const backgroundColor = 'floralwhite';
 
         // Add fonts to whitelist
         // add an array of values
@@ -391,7 +393,6 @@
             [{ 'script': 'sub' }, { 'script': 'super' }],      // superscript/subscript
 
             [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
 
             [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
             [{ 'font': fontFamilyArr }],
@@ -435,7 +436,7 @@
             // Load tabs into tabcontainer
             for (var tab of notebook.tabs) {
                 const tabIndex = Array.prototype.indexOf.call(notebook.tabs, tab);
-                const color = tabColors[tabIndex % tabColors.length];
+                const color = backgroundColor;
                 const tabLabel = document.createElement('div');
                 tabLabel.style.backgroundColor = color;
                 tabLabel.setAttribute('class', 'tab');
@@ -460,6 +461,7 @@
             tabcontainer.children[notebook.activeTab].style.color = 'black';
             tabcontainer.children[notebook.activeTab].style.borderRight = 'none';
             tabcontainer.children[notebook.activeTab].style.borderTopLeftRadius = '0';
+            tabcontainer.children[notebook.activeTab].style.backgroundColor = activeTabColor;
 
             // Clear pages
             var pagesDiv = document.getElementById('pages');
@@ -488,9 +490,8 @@
             pagesDiv.children[currentTab.activePage].style.color = 'black';
 
             // set colors
-            var color = tabColors[notebook.activeTab % tabColors.length];
+            var color = activeTabColor;
             var spacer = document.getElementById('spacer');
-            tabcontainer.children[notebook.activeTab].style.backgroundColor = color;
             spacer.style.backgroundColor = color;
             var leftspacer = document.getElementById('leftspacer');
             var pagecontainer = document.getElementById('pagecontainer');
@@ -669,7 +670,7 @@
                     ]
                 }]
             });
-            const color = tabColors[(notebook.tabs.length - 1) % tabColors.length];
+            const color = backgroundColor;
             const tab = document.createElement('div');
             tab.setAttribute('onClick', 'openTab(this)');
             tab.style.backgroundColor = color;
