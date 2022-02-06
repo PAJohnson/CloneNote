@@ -347,8 +347,6 @@
 
     <!-- Initialize Quill editor -->
     <script>
-        var Delta = Quill.import('delta');
-
         hljs.configure({   // optionally configure hljs
             languages: ['javascript', 'python']
         });
@@ -411,6 +409,10 @@
             },
             theme: 'snow'
         });
+
+        quill.root.spellcheck = false;
+        quill.root.focus();
+        quill.root.blur();
 
         // for autosave
         var Delta = Quill.import('delta');
