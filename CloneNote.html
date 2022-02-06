@@ -4,7 +4,6 @@
 <head>
     <!-- Include stylesheet -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <link href="https://cdn.quilljs.com/1.3.6/quill.bubble.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono" rel="stylesheet">
     <style>
@@ -351,7 +350,7 @@
         var Delta = Quill.import('delta');
 
         hljs.configure({   // optionally configure hljs
-            languages: ['javascript', 'ruby', 'python']
+            languages: ['javascript', 'python']
         });
 
         // State contained in notebook array and notebook.activeTab variable
@@ -458,7 +457,6 @@
             tabcontainer.children[notebook.activeTab].style.paddingLeft = '12px';
             tabcontainer.children[notebook.activeTab].style.paddingRight = '12px';
             tabcontainer.children[notebook.activeTab].style.fontSize = 'medium';
-            tabcontainer.children[notebook.activeTab].style.color = 'black';
             tabcontainer.children[notebook.activeTab].style.borderRight = 'none';
             tabcontainer.children[notebook.activeTab].style.borderTopLeftRadius = '0';
             tabcontainer.children[notebook.activeTab].style.backgroundColor = activeTabColor;
@@ -568,6 +566,8 @@
         pages.addEventListener('mouseleave', stopDraggingPages, false);
 
         // context menu functions
+        var menuClickX;
+        var menuClickY;
         document.onclick = hideMenu;
         function hideMenu() {
             console.log('calling hidemenu');
@@ -578,16 +578,20 @@
             e.preventDefault();
             var menu = document.getElementById("contextMenu")
             menu.style.display = 'block';
-            menu.style.left = e.pageX + 'px';
-            menu.style.top = e.pageY + 'px';
+            menuClickX = e.pageX;
+            menuClickY = e.pageY;
+            var menuRect = document.getElementById('contextMenu').getBoundingClientRect();
+            var menuClippedRight = (menuRect.width + menuClickX) > window.innerWidth;
+            var menuClippedBottom = (menuRect.height + menuClickY) > window.innerHeight;
+            menu.style.left = (e.pageX - menuRect.width * menuClippedRight) + 'px';
+            menu.style.top = (e.pageY - menuRect.height * menuClippedBottom) + 'px';
         }
 
         function renameItem(e) {
             // figure out what element is below top left corner of context menu
             // document.elementFromPoint to grab element
             //e.stopPropagation();
-            var menuRect = document.getElementById('contextMenu').getBoundingClientRect();
-            var elementsUnder = document.elementsFromPoint(menuRect.left, menuRect.top);
+            var elementsUnder = document.elementsFromPoint(menuClickX, menuClickY);
             console.log('from renameItem', elementsUnder);
             for (var element of elementsUnder) {
                 if (element.className == 'tab' || element.className == 'page' || element.className == 'notebook-name-class') {
@@ -600,8 +604,7 @@
 
         function deleteItem() {
             console.log('calling deleteItem')
-            var menuRect = document.getElementById('contextMenu').getBoundingClientRect();
-            var elementsUnder = document.elementsFromPoint(menuRect.left, menuRect.top);
+            var elementsUnder = document.elementsFromPoint(menuClickX, menuClickY);
             const tabcontainer = document.getElementById('tabcontainer');
             const pagecontainer = document.getElementById('pages');
             for (var element of elementsUnder) {
@@ -616,15 +619,12 @@
                 }
                 if (element.className == 'page') {
                     var pageindex = Array.prototype.indexOf.call(pagecontainer.children, element);
-                    console.log('deleting page at index', pageindex);
-                    console.log('old pages', JSON.stringify(notebook.tabs[notebook.activeTab].pages))
                     if (notebook.tabs[notebook.activeTab].pages.length != 1) {
                         notebook.tabs[notebook.activeTab].pages.splice(pageindex, 1);
                         if (pageindex == notebook.tabs[notebook.activeTab].activePage && pageindex != 0) {
                             notebook.tabs[notebook.activeTab].activePage -= 1;
                         }
                     }
-                    console.log('new pages', JSON.stringify(notebook.tabs[notebook.activeTab].pages))
                 }
             }
             loadNotebook();
