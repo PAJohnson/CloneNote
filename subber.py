@@ -9,4 +9,5 @@ with open('./CloneNote.html', 'r') as template, open('./index.html', 'w') as ind
     endText = clonenote.split('//// NOTEBOOK_END')[1]
 
     indexStr = startText + "var notebook = " + noteStr.replace("'", "\\'") + ";\n" + endText
+    indexStr = indexStr.replace('<title>CloneNote</title>', '<title>Patrick Johnson</title>')
     index.write(indexStr)
