@@ -378,7 +378,7 @@
 
         // Add fonts to whitelist
         // add an array of values
-        const fontFamilyArr = ["Roboto", "Roboto Mono", "Times New Roman", "Calibri", "Sans-Serif"];
+        const fontFamilyArr = [ "Times New Roman", "Roboto", "Roboto Mono", "Calibri", "Sans-Serif"];
         let fonts = Quill.import("attributors/style/font");
         fonts.whitelist = fontFamilyArr;
         Quill.register(fonts, true);
@@ -665,13 +665,7 @@
 
         function setNotebookName(e) {
             var path = e.composedPath();
-            console.log(e);
-            if (e.data != null) {
-                notebook.notebookName = path[0].innerText;//e.path[0].innerText;
-            }
-            else {
-                clearContentEditable();
-            }
+            notebook.notebookName = path[0].innerText;
         }
 
         function setTabName(e) {
