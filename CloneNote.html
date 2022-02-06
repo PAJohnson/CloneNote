@@ -431,6 +431,7 @@
             document.getElementById('notebookname').innerText = notebook.notebookName;
             document.getElementById('notebookname').addEventListener('contextmenu', showMenu);
             document.getElementById('notebookname').addEventListener('input', setNotebookName);
+            document.getElementById('notebookname').addEventListener('keydown', clearContentEditable);
 
             // Load tabs into tabcontainer
             for (var tab of notebook.tabs) {
@@ -443,6 +444,7 @@
                 tabLabel.setAttribute('spellcheck', 'false');
                 tabLabel.addEventListener('input', setTabName);
                 tabLabel.addEventListener('contextmenu', showMenu);
+                tabLabel.addEventListener('keydown', clearContentEditable);
                 const title = document.createTextNode(tab.name);
                 tabLabel.appendChild(title);
                 tabcontainer.appendChild(tabLabel);
@@ -475,6 +477,7 @@
                 newPage.setAttribute('spellcheck', 'false');
                 newPage.addEventListener('input', setPageName);
                 newPage.addEventListener('contextmenu', showMenu);
+                newPage.addEventListener('keydown', clearContentEditable);
                 const pageName = document.createTextNode(page.name);
                 newPage.appendChild(pageName);
                 pagesDiv.appendChild(newPage);
@@ -504,11 +507,11 @@
 
         // Autosaving - from quilljs example
         var change = false
-        quill.on('text-change', function(delta) {
+        quill.on('text-change', function (delta) {
             change = true;
         });
 
-        setInterval(function() {
+        setInterval(function () {
             if (change) {
                 change = false;
                 var tab = notebook.tabs[notebook.activeTab];
@@ -645,15 +648,40 @@
             loadNotebook();
         }
 
-        function setNotebookName(e) {
-            var path = e.composedPath();
-            notebook.notebookName = path[0].innerText;//e.path[0].innerText;
+        // renaming functions
+        function clearContentEditable(e) {
+            // set contentEditable to false for all renamable items
+            if (e.key == 'Enter') {
+                e.preventDefault();
+                document.getElementById('notebookname').setAttribute("contenteditable", false);
+                for (const elem of document.getElementsByClassName('tab')) {
+                    elem.setAttribute("contenteditable", false);
+                }
+                for (const elem of document.getElementsByClassName('page')) {
+                    elem.setAttribute("contenteditable", false);
+                }
+            }
         }
 
-        // Change tab name when input to span element is changed (fires on every character)
+        function setNotebookName(e) {
+            var path = e.composedPath();
+            console.log(e);
+            if (e.data != null) {
+                notebook.notebookName = path[0].innerText;//e.path[0].innerText;
+            }
+            else {
+                clearContentEditable();
+            }
+        }
+
         function setTabName(e) {
             var path = e.composedPath();
             notebook.tabs[notebook.activeTab].name = path[0].innerText;
+        }
+
+        function setPageName(e) {
+            var path = e.composedPath();
+            notebook.tabs[notebook.activeTab].pages[notebook.tabs[notebook.activeTab].activePage].name = path[0].innerText;
         }
 
         // save the current editor contents in notebook page and load new content
@@ -697,12 +725,6 @@
             const tabcontainer = document.getElementById('tabcontainer');
             tab.appendChild(title);
             tabcontainer.appendChild(tab);
-        }
-
-        // Change tab name when input to span element is changed (fires on every character)
-        function setPageName(e) {
-            var path = e.composedPath();
-            notebook.tabs[notebook.activeTab].pages[notebook.tabs[notebook.activeTab].activePage].name = path[0].innerText;
         }
 
         function openPage(elem) {
