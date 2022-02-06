@@ -502,6 +502,21 @@
             loadNotebook();
         }
 
+        // Autosaving - from quilljs example
+        var change = false
+        quill.on('text-change', function(delta) {
+            change = true;
+        });
+
+        setInterval(function() {
+            if (change) {
+                change = false;
+                var tab = notebook.tabs[notebook.activeTab];
+                tab.pages[tab.activePage].content = quill.getContents();
+                console.log('detected changes, saving contents');
+            }
+        }, 2000);
+
         // Make Tabs bar scrollable
         const tabcontainer = document.getElementById('tabcontainer');
         const pages = document.getElementById('pages');
